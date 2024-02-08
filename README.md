@@ -1,1 +1,1 @@
-# SER
+# Speech Emotion Recognition (SER)
