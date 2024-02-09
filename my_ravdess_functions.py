@@ -49,72 +49,83 @@ def get_feature_ravdess(file: str, feature: int) -> int | None:
 	features = filename.split('-')
 	return int(features[feature-1])
 
-def get_mean_emotions(emotions: Emotions) -> np.ndarray:
+def get_mean_emotions(emotions) -> np.ndarray:
 	"""
 	# Explicación
 
-	Obtiene la media para cada una de las emociones. Resulta que por no ser homogeneo la lista de emociones, la función np.mean() no funciona correctamente,
-	por lo que toca ir a cada una de las emociones y sacar la media correspondiente
+	Obtiene la media para cada una de las emociones teniendo en cuenta la intensidad.
 	
 	# Parametros
 
-	@param emotions: Emotions. Es un arreglo que tiene 8 posiciones representando cada una, una emoción diferente. Cada emoción tiene el valor de la respectiva
-	métrica que se esté tomando
+	@param emotions. Es un arreglo que tiene 8 posiciones representando en cada una una emoción diferente, dentro de cada posición hay un arreglo
+					 que contiene los datos para la intensidad normal y fuerte respectivamente.
 
 	# Retorno
 
-	Retorna un arreglo de NumPy con el promedio de cada una de las emociones, es decir, el promedio de la emoción 1, el promedio de la emoción 2, etc.
+	Retorna un arreglo bidimensional de NumPy con el promedio de cada emoción, dentro de cada emoción hay un arreglo que diferencia el promedio
+	de las emociones con intensidades normales con las fuertes
 	"""
 
-	averages = np.zeros(8, dtype=np.float32)
+	averages = np.zeros(8, dtype=np.ndarray)
 	for i, emotion in enumerate(emotions):
-		averages[i] = np.mean(emotion)
+		averages[i] = np.mean(emotion, axis=1, dtype=np.float32)
 	
 	return averages
 
-def get_std_emotions(emotions: Emotions) -> np.ndarray:
+def get_std_emotions(emotions) -> np.ndarray:
 	"""
 	# Explicación
 
-	Obtiene la desviación estandar para cada una de las emociones. Resulta que por no ser homogeneo la lista de emociones, la función np.mean() no 
-	funciona correctamente, por lo que toca ir a cada una de las emociones y sacar la desviación estandar correspondiente. Funciona de manera análoga
-	a `get_mean_emotions`, solo que aquí se calcula la desviación estandar.
+	Obtiene la media para cada una de las emociones teniendo en cuenta la intensidad. Funciona de manera análoga a `get_mean_emotions`, solo que 
+	aquí se calcula la desviación estandar.
 	
 	# Parametros
 
-	@param emotions: Emotions. Es un arreglo que tiene 8 posiciones representando cada una, una emoción diferente. Cada emoción tiene el valor de la respectiva
-	métrica que se esté tomando
+	@param emotions. Es un arreglo que tiene 8 posiciones representando en cada una una emoción diferente, dentro de cada posición hay un arreglo
+	que contiene los datos para la intensidad normal y fuerte respectivamente.
 
 	# Retorno
 
-	Retorna un arreglo de NumPy con la desviación estandar de cada una de las emociones, es decir, la desviación estandar de la emoción 1, 
-	la desviación estandar de la emoción 2, etc.
+	Retorna un arreglo bidimensional de NumPy con la desviación estandar de cada emoción, dentro de cada emoción hay un arreglo que diferencia el promedio
+	de las emociones con intensidades normales con las fuertes
 	"""
 
-	stds = np.zeros(8, dtype=np.float32)
+	stds: np.ndarray = np.zeros(8, dtype=np.ndarray)
 	for i, emotion in enumerate(emotions):
-		stds[i] = np.std(emotion)
+		stds[i] = np.std(emotion, axis=1, dtype=np.float32)
 	
 	return stds
+
+def alternate_lists(list1, list2) -> np.ndarray:
+	"""Sea una lista1 = [1, 2, 3] y lista2 = [4, 5, 6], con la función se unen las listas alternandose entre ellas, es decir
+	resulta en una lista como la siguiente: [1, 4, 2, 5, 3, 6]. Además de eso, toma las primeras dos posiciones y las convierte en una tupla
+	para dejar el siguiente resultado: alternate_lists(list1, list2) = [(1, 4), (2, 5), (3, 6)]. lista1 y lista2 deben tener el mismo tamaño"""
+
+	size = len(list1)
+	return np.array([(list1[i], list2[i]) for i in range(size)])
 
 def get_crests_valleys_ravdess(actor: str) -> tuple[Emotions]:
 	"""
 	# Explicación
 
 	Cada uno de los actores tiene grabaciones para todas las emociones, esta función lo que hace es ver la onda del sonido y guardar la amplitud máxima, mínima
-	(crestas y valles respectivamente) y la media en diferentes listas, es posible porque la onda no es simétrica. Las amplitudes están guardadas teniendo 
+	(crestas y valles respectivamente) y la media en diferentes listas, es posible porque la onda no es completamente simétrica. Las amplitudes están guardadas teniendo 
 	en cuenta la emoción respectiva. SOLO PARA EL DATASET DE RAVDESS
 	
 	Por ejemplo, para el actor01, las amplitudes máximas para los audios que tienen emoción neutra es la siguiente:
 
-	`crests[0] = [0.04100873, 0.04718515, 0.058744207, 0.06183686]`
-
+	`crests[0] = array([[0.04100873, 0.04718515, 0.05874421, 0.06183686],
+       					[0.        , 0.        , 0.        , 0.        ]])`
 	
+	La primera fila corresponde a la intensidad `normal` y la segunda a la `strong`, como neutral solo tiene intensidad normal, entonces strong está lleno de 0
+	
+				   
 	Para una emoción calmada, es la siguiente:
 
-	`crests[1] = [0.026036292, 0.028652139, 0.0382348, 0.04739437, 0.02244095, 0.02698043, 0.022052493, 0.029932763]`
+	`crests[1] = array([[0.02603629, 0.02865214, 0.0382348 , 0.04739437],
+       					[0.02244095, 0.02698043, 0.02205249, 0.02993276]])`
 
-	Y así para cada una de las emociones. Como se mencionó, hay una lista para las crestas y otra diferente para los valles.
+	Y así para cada una de las emociones. Como se mencionó, hay una lista para las crestas, otra diferente para los valles y para el promedio.
 
 	El orden en que están guardadas las emociones en todas las listas, es el mismo de cómo fueron mostrados en el DataSet de Ravdess, es decir,
 	1. Neutral - 2. Calm - 3. Happy - 4. Sad - 5. Angry - 6. Fearful - 7. Disgust - 8. Surprised
@@ -126,15 +137,16 @@ def get_crests_valleys_ravdess(actor: str) -> tuple[Emotions]:
 
 	# Retorno
 
-	La función al final retorna las dos listas que contiene las crestas, los valles y la media de los audios en el mismo orden.
+	La función al final retorna las dos listas que contiene las crestas, los valles y la media de los audios en el mismo orden, Para cada una de estas 3 métricas, tienen
+	dos arreglos de los cuales diferencian los datos con intensidad normal y fuerte.
 	"""
 	
 	ravdess_path: str = r'Ravdess\audio_speech_actors_01-24'
 	actor_path: str = fr'{ravdess_path}\{actor}'
 	
-	crests: Emotions = [[] for _ in range(8)]
-	valleys: Emotions = [[] for _ in range(8)]
-	averages: Emotions = [[] for _ in range(8)]
+	crests_normal, crests_strong = [[] for _ in range(8)], [[] for _ in range(8)]
+	valleys_normal, valleys_strong = [[] for _ in range(8)], [[] for _ in range(8)]
+	averages_normal, averages_strong = [[] for _ in range(8)], [[] for _ in range(8)]
 
 	for record in os.listdir(actor_path):
 		record_path: str = fr'{actor_path}\{record}'
@@ -142,12 +154,36 @@ def get_crests_valleys_ravdess(actor: str) -> tuple[Emotions]:
 
 		index: int = get_feature_ravdess(record, 3) - 1
 
-		crests[index].append(np.max(y))
-		valleys[index].append(np.min(y))
-		averages[index].append(np.mean(y))
-	
+		if index == 0: # Si la emoción es neutra, entonces no hay diferentes intensidades
+			crests_normal[0].append(np.max(y))
+			valleys_normal[0].append(np.min(y))
+			averages_normal[0].append(np.mean(y))
+
+			crests_strong[0].append(0)
+			valleys_strong[0].append(0)
+			averages_strong[0].append(0)
+
+			continue
+
+		if get_feature_ravdess(record, 4) == 1: # Si la intensidad es `normal`
+			crests_normal[index].append(np.max(y))
+			valleys_normal[index].append(np.min(y))
+			averages_normal[index].append(np.mean(y))
+
+		else: # Si la intensidad es `strong`
+			crests_strong[index].append(np.max(y))
+			valleys_strong[index].append(np.min(y))
+			averages_strong[index].append(np.mean(y))
+
+	# crests y demás están organizando de esta manera: [[crests_normal[0], crests_strong[0]], ...]	
+	crests = alternate_lists(crests_normal, crests_strong)
+	valleys = alternate_lists(valleys_normal, valleys_strong)
+	averages = alternate_lists(averages_normal, averages_strong)
+
 	return crests, valleys, averages
 
 if __name__ == '__main__':
-	print(get_std_emotions(get_crests_valleys_ravdess('Actor_01')[0]))
-
+	a = get_crests_valleys_ravdess('Actor_01')[0]
+	print(a, '\n\n')
+	print(get_mean_emotions(a), '\n\n')
+	print(get_std_emotions(a))
