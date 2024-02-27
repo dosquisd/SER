@@ -1,0 +1,5 @@
+;Actor;Sex;Emotion;Intensity;Statement;Reps;File;Sample Entropy;Correlation Dimension;Lyapunov Exponent Rosenstein;Lyapunov Exponent Eckmann;Detrented Fluctuation Analysis;Hurst Exponent
+152;Actor_03;Man;Angry;Strong;Kids are talking by the door;1;03-01-05-02-01-01-03.wav;0.03236054;0.1594776;0.016249241;[ 0.14290519  0.04295686 -0.05415818 -0.23403645];0.19569948;0.4908449
+153;Actor_03;Man;Angry;Strong;Kids are talking by the door;2;03-01-05-02-01-02-03.wav;0.037780106;0.07114235;0.017923001;[ 0.16113184  0.05057214 -0.05223367 -0.23159535];0.3478512;0.33449572
+154;Actor_03;Man;Angry;Strong;Dogs are sitting by the door;1;03-01-05-02-02-01-03.wav;0.026771009;0.23635498;0.014639989;[ 0.12007365  0.02850918 -0.06068663 -0.2313379 ];0.33779886;0.6942484
+155;Actor_03;Man;Angry;Strong;Dogs are sitting by the door;2;03-01-05-02-02-02-03.wav;0.043557923;0.04115971;0.022618633;[ 0.18230921  0.05552245 -0.0532005  -0.2382378 ];0.11306499;0.41454858
