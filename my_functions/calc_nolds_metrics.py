@@ -6,7 +6,7 @@ import pandas as pd
 from my_functions.my_ravdess_functions import get_feature_ravdess
 
 
-ravdess_path: str = 'Ravdess/audio_speech_actors_01-24'
+ravdess_path: str = 'dataset/Ravdess/audio_speech_actors_01-24'
 SR: int = 22050
 
 def resample(sample: np.ndarray[np.float32], mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], float]:

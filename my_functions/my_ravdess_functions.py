@@ -3,6 +3,7 @@ import librosa
 import numpy as np
 from typing import TypeAlias
 
+
 Emotion: TypeAlias = list[float] # Tiene las métricas respectiva para una emoción en concreto
 Emotions: TypeAlias = list[Emotion] # Lista de emociones de una métrica en concreto
 
@@ -141,7 +142,7 @@ def get_crests_valleys_ravdess(actor: str) -> tuple[Emotions]:
 	dos arreglos de los cuales diferencian los datos con intensidad normal y fuerte.
 	"""
 	
-	ravdess_path: str = r'Ravdess\audio_speech_actors_01-24'
+	ravdess_path: str = r'dataset\Ravdess\audio_speech_actors_01-24'
 	actor_path: str = fr'{ravdess_path}\{actor}'
 	
 	crests_normal, crests_strong = [[] for _ in range(8)], [[] for _ in range(8)]
