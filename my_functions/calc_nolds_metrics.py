@@ -9,7 +9,7 @@ from my_functions.my_ravdess_functions import get_feature_ravdess
 ravdess_path: str = 'dataset/Ravdess/audio_speech_actors_01-24'
 SR: int = 22050
 
-def resample(sample: np.ndarray[np.float32], mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], float]:
+def resample(sample: np.ndarray[np.float32], mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""Se hace una interpolación con los datos contenidos en `sample`, el cual consiste en una pista \
 	de audio con una frecuencia de muestreo de SR (22050 hz)
 	
@@ -30,7 +30,7 @@ def resample(sample: np.ndarray[np.float32], mili_s: float = 0.1, mode: str = 'm
 	mode = mode.lower()
 
 	if mode not in ('mean', 'median'):
-		return np.zeros(1, np.float32), 0.0
+		return np.zeros(1, 'float32'), 0.0
 	
 	n = len(sample)
 	time_range = pd.date_range(start='2024-05-06', periods=n, freq=f'{1e6/SR:.3f}us')  # La elección de la fecha es irrelevante
@@ -66,7 +66,7 @@ def get_audio_record_ravdess(file: str, orig: bool = False, mili_s: float = 0.1,
 
 	return (sample, sr) if orig else resample(sample, mili_s, mode)
 
-def calc_hurst_rs(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], float]:
+def calc_hurst_rs(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""
 	Calcula el exponente de hurst (con `nolds.hurst_rs()`) para una lista de nombres de archivos que contienen los audios de ravdess
 
@@ -89,14 +89,16 @@ def calc_hurst_rs(files: np.ndarray[str], partitions: int = 1, orig: bool = Fals
 	Retorna una tupla, donde la primera posición corresponde al arreglo que contiene la métrica con `nolds.hurst_rs()` y la segunda contiene el sample rate respectivo
 	"""
 	hurst_rs_list = np.empty(files.shape, dtype='float32')
+	sr_list = np.empty(files.shape, dtype='float32')
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
 		hurst_rs_list[i] = nolds.hurst_rs(y[:len(y)//partitions], fit='poly')
+		sr_list[i] = sr
 
-	return hurst_rs_list, sr
+	return hurst_rs_list, sr_list
 
-def calc_dfa(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], float]:
+def calc_dfa(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""
 	Calcula el "Detrented Fluctuation Analysis" (con `nolds.dfa()`) para una lista de nombres de archivos que contienen los audios de ravdess
 
@@ -119,14 +121,16 @@ def calc_dfa(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mi
 	Retorna una tupla, donde la primera posición corresponde al arreglo que contiene la métrica con `nolds.dfa()` y la segunda contiene el sample rate respectivo
 	"""
 	dfa_list = np.empty(files.shape, dtype='float32')
+	sr_list = np.empty(files.shape, dtype='float32')
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
 		dfa_list[i] = nolds.dfa(y[:len(y)//partitions], fit_exp='poly')
+		sr_list[i] = sr
 
-	return dfa_list, sr
+	return dfa_list, sr_list
 
-def calc_lyap_e(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], float]:
+def calc_lyap_e(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""
 	Calcula los exponentes de Lyapunov (con `nolds.lyap_e()`) para una lista de nombres de archivos que contienen los audios de ravdess
 
@@ -149,14 +153,16 @@ def calc_lyap_e(files: np.ndarray[str], partitions: int = 1, orig: bool = False,
 	Retorna una tupla, donde la primera posición corresponde un arreglo multidimensional que contiene la métrica con `nolds.lyap_e()` y la segunda contiene el sample rate respectivo
 	"""
 	lyap_e_list = np.empty(files.shape, dtype=np.ndarray)
+	sr_list = np.empty(files.shape, dtype='float32')
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
 		lyap_e_list[i] = nolds.lyap_e(y[:len(y)//partitions])
+		sr_list[i] = sr
 
-	return np.array([list(exponents) for exponents in lyap_e_list]), sr
+	return np.array([list(exponents) for exponents in lyap_e_list]), sr_list
 
-def calc_lyap_r(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], float]:
+def calc_lyap_r(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""
 	Calcula el exponente de Lyapunov (con `nolds.lyap_r()`) para una lista de nombres de archivos que contienen los audios de ravdess
 
@@ -179,16 +185,18 @@ def calc_lyap_r(files: np.ndarray[str], partitions: int = 1, orig: bool = False,
 	Retorna una tupla, donde la primera posición corresponde el arreglo que contiene la métrica con `nolds.lyap_r()` y la segunda contiene el sample rate respectivo
 	"""
 	lyap_r_list = np.empty(files.shape, dtype='float32')
+	sr_list = np.empty(files.shape, dtype='float32')
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
 		lyap_r_list[i] = nolds.lyap_r(y[:len(y)//partitions], fit='poly')
-	
-	return lyap_r_list, sr
+		sr_list[i] = sr
 
-def calc_corr_dim(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], float]:
+	return lyap_r_list, sr_list
+
+def calc_corr_dim(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""
-	Calcula los exponentes de Lyapunov (con `nolds.lyap_e()`) para una lista de nombres de archivos que contienen los audios de ravdess
+		Calcula los exponentes de Lyapunov (con `nolds.corr_dim()`) para una lista de nombres de archivos que contienen los audios de ravdess
 
 	# Parametros
 
@@ -208,18 +216,20 @@ def calc_corr_dim(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, ori
 
 	# Retorno
 		
-	Retorna una tupla, donde la primera posición corresponde un arreglo multidimensional que contiene la métrica con `nolds.corr_dim()` y la segunda contiene el sample rate respectivo
+	Retorna una tupla, donde la primera posición corresponde al arreglo que contiene la métrica con `nolds.corr_dim()` y la segunda contiene el sample rate respectivo
 	"""
 
 	corr_dim_list = np.empty(files.shape, dtype='float32')
+	sr_list = np.empty(files.shape, dtype='float32')
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
 		corr_dim_list[i] = nolds.corr_dim(y[:len(y)//partitions], emb_dim=emb_dim, fit='poly')
-	
-	return corr_dim_list, sr
+		sr_list[i] = sr
 
-def calc_sampen(files: np.ndarray, partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], float]:
+	return corr_dim_list, sr_list
+
+def calc_sampen(files: np.ndarray, partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""
 	Calcula los exponentes de Lyapunov (con `nolds.lyap_e()`) para una lista de nombres de archivos que contienen los audios de ravdess
 
@@ -239,15 +249,17 @@ def calc_sampen(files: np.ndarray, partitions: int = 1, orig: bool = False, mili
 
 	# Retorno
 
-	Retorna una tupla, donde la primera posición corresponde un arreglo multidimensional que contiene la métrica con `nolds.sampen()` y la segunda contiene el sample rate respectivo
+	Retorna una tupla, donde la primera posición corresponde el arreglo que contiene la métrica con `nolds.sampen()` y la segunda contiene la lista con el sample rate respectivo
 	"""
 	sampen_list = np.empty(files.shape, dtype='float32')
+	sr_list = np.empty(files.shape, dtype='float32')
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
 		sampen_list[i] = nolds.sampen(y[:len(y)//partitions])
+		sr_list[i] = sr
 	
-	return sampen_list, sr
+	return sampen_list, sr_list
 
 
 if __name__ == '__main__':

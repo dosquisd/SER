@@ -9,12 +9,12 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 dir = sep.join(current_dir.split(sep)[:-1])
 sys.path.append(dir)
 
-from my_functions import calc_sampen
+from my_functions import calc_lyap_e
 
 
 load_dotenv()
 
-# Obtener las variables básicas para la busqueda del sampen entropy
+# Obtener las variables básicas para la busqueda de los coeficientes de lyapunov
 records_df: pd.DataFrame = pd.read_csv(fr'{dir}\data.csv', delimiter=';', index_col=0)
 
 partition: int = int(os.getenv('partition'))  # La partición que se utilizará
@@ -22,14 +22,17 @@ mili_s: float = float(os.getenv('mili_s'))  # Variable para indicar el periodo c
 mode: str = os.getenv('mode')  # Modo de interpolación
 orig: bool = False  # Variable para indicar que no tomaremos los datos originales, sino un resampleo
 
-# Iniciar con el cálculo del Sample Entropy
+# Comenzar a calcular los coeficientes de lyapunov y guardarla en un csv
 files: np.ndarray = records_df['File'].to_numpy()
-new_label: str = 'Sample Entropy'
-out_path: str = f'{dir}\metrics\sampen{"" if orig else "1"}.csv'
+new_label: str = 'Lyapunov Exponent'
+out_path: str = f'{dir}\metrics\lyap_e{"" if orig else "1"}.csv'
 
 try:
-	sampens, srs = calc_sampen(files, partition, orig, mili_s, mode)
-	records_df[new_label] = sampens
+	lyap_es, srs = calc_lyap_e(files, partition, orig, mili_s, mode)
+	records_df[f'1st {new_label}'] = lyap_es[:, 0]
+	records_df[f'2nd {new_label}'] = lyap_es[:, 1]
+	records_df[f'3rd {new_label}'] = lyap_es[:, 2]
+	records_df[f'4th {new_label}'] = lyap_es[:, 3]
 	records_df['Sample Rate'] = srs
 except Exception as e:
 	pass
