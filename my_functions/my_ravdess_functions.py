@@ -81,7 +81,7 @@ def get_std_emotions(emotions) -> np.ndarray:
 	
 	# Parametros
 
-	@param emotions. Es un arreglo que tiene 8 posiciones representando en cada una una emoción diferente, dentro de cada posición hay un arreglo
+	@param emotions. Es un arreglo que tiene 8 posiciones representando en cada una una emoción diferente, dentro de cada posición hay un arreglo \
 	que contiene los datos para la intensidad normal y fuerte respectivamente.
 
 	# Retorno
@@ -181,6 +181,7 @@ def get_crests_valleys_ravdess(actor: str) -> tuple[Emotions]:
 	averages = alternate_lists(averages_normal, averages_strong)
 
 	return crests, valleys, averages
+
 
 if __name__ == '__main__':
 	a = get_crests_valleys_ravdess('Actor_01')[0]
