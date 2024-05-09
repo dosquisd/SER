@@ -20,6 +20,7 @@ records_df: pd.DataFrame = pd.read_csv(fr'{dir}\data.csv', delimiter=';', index_
 partition: int = int(os.getenv('partition'))  # La partición que se utilizará
 mili_s: float = float(os.getenv('mili_s'))  # Variable para indicar el periodo con el que se interpolará
 mode: str = os.getenv('mode')  # Modo de interpolación
+emb_dim: int = int(os.getenv('emb_dim'))  # Embedding dimension
 orig: bool = False  # Variable para indicar que no tomaremos los datos originales, sino un resampleo
 
 # Comenzar a calcular los coeficientes de lyapunov y guardarla en un csv
@@ -28,13 +29,13 @@ new_label: str = 'Lyapunov Exponent'
 out_path: str = f'{dir}\metrics\lyap_e{"" if orig else "1"}.csv'
 
 try:
-	lyap_es, srs = calc_lyap_e(files, partition, orig, mili_s, mode)
+	lyap_es, srs = calc_lyap_e(files, partition, emb_dim, orig, mili_s, mode)
 	records_df[f'1st {new_label}'] = lyap_es[:, 0]
 	records_df[f'2nd {new_label}'] = lyap_es[:, 1]
 	records_df[f'3rd {new_label}'] = lyap_es[:, 2]
 	records_df[f'4th {new_label}'] = lyap_es[:, 3]
 	records_df['Sample Rate'] = srs
 except Exception as e:
-	pass
+	print(repr(e))
 finally:
 	records_df.to_csv(out_path, sep=';')

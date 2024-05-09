@@ -1,3 +1,5 @@
+# TODO: Buscar solución para que emb_dim-1 y matrix_dim -1 sean divisibles dentro de calc_lyap_e
+
 import librosa
 import nolds
 import os
@@ -130,7 +132,7 @@ def calc_dfa(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mi
 
 	return dfa_list, sr_list
 
-def calc_lyap_e(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
+def calc_lyap_e(files: np.ndarray, partitions: int = 1, emb_dim: int = 10, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""
 	Calcula los exponentes de Lyapunov (con `nolds.lyap_e()`) para una lista de nombres de archivos que contienen los audios de ravdess
 
@@ -141,6 +143,8 @@ def calc_lyap_e(files: np.ndarray[str], partitions: int = 1, orig: bool = False,
 	partitions : int
 		Representa la partición de audio con la que se trabajará. Es útil cambiarla cuando se quiera probar las funciones, sin tener que utilizar toda la pista de audio .\
 		Por defecto `partitions = 1`
+	emb_dim : int
+		Es el embedding dimension que se utilizará para calcular la dimensión de correlación. Por defecto `emb_dim = 14`
 	orig : bool
 		Indica si el programa retorne los datos originales antes del resampleo. Por defecto `orig = False`
 	mili_s : float
@@ -157,12 +161,12 @@ def calc_lyap_e(files: np.ndarray[str], partitions: int = 1, orig: bool = False,
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
-		lyap_e_list[i] = nolds.lyap_e(y[:len(y)//partitions])
+		lyap_e_list[i] = nolds.lyap_e(y[:len(y)//partitions], emb_dim)
 		sr_list[i] = sr
 
 	return np.array([list(exponents) for exponents in lyap_e_list]), sr_list
 
-def calc_lyap_r(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
+def calc_lyap_r(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""
 	Calcula el exponente de Lyapunov (con `nolds.lyap_r()`) para una lista de nombres de archivos que contienen los audios de ravdess
 
@@ -173,6 +177,8 @@ def calc_lyap_r(files: np.ndarray[str], partitions: int = 1, orig: bool = False,
 	partitions : int
 		Representa la partición de audio con la que se trabajará. Es útil cambiarla cuando se quiera probar las funciones, sin tener que utilizar toda la pista de audio .\
 		Por defecto `partitions = 1`
+	emb_dim : int
+		Es el embedding dimension que se utilizará para calcular la dimensión de correlación. Por defecto `emb_dim = 14`
 	orig : bool
 		Indica si el programa retorne los datos originales antes del resampleo. Por defecto `orig = False`
 	mili_s : float
@@ -189,7 +195,7 @@ def calc_lyap_r(files: np.ndarray[str], partitions: int = 1, orig: bool = False,
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
-		lyap_r_list[i] = nolds.lyap_r(y[:len(y)//partitions], fit='poly')
+		lyap_r_list[i] = nolds.lyap_r(y[:len(y)//partitions], emb_dim, fit='poly')
 		sr_list[i] = sr
 
 	return lyap_r_list, sr_list
@@ -229,7 +235,7 @@ def calc_corr_dim(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, ori
 
 	return corr_dim_list, sr_list
 
-def calc_sampen(files: np.ndarray, partitions: int = 1, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
+def calc_sampen(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, orig: bool = False, mili_s: float = 0.1, mode: str = 'median') -> tuple[np.ndarray[np.float32], np.ndarray[np.float32]]:
 	"""
 	Calcula los exponentes de Lyapunov (con `nolds.lyap_e()`) para una lista de nombres de archivos que contienen los audios de ravdess
 
@@ -240,6 +246,8 @@ def calc_sampen(files: np.ndarray, partitions: int = 1, orig: bool = False, mili
 	partitions : int
 		Representa la partición de audio con la que se trabajará. Es útil cambiarla cuando se quiera probar las funciones, sin tener que utilizar toda la pista de audio .\
 		Por defecto `partitions = 1`
+	emb_dim : int
+		Es el embedding dimension que se utilizará para calcular la dimensión de correlación. Por defecto `emb_dim = 14`
 	orig : bool
 		Indica si el programa retorne los datos originales antes del resampleo. Por defecto `orig = False`
 	mili_s : float
@@ -256,7 +264,7 @@ def calc_sampen(files: np.ndarray, partitions: int = 1, orig: bool = False, mili
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
-		sampen_list[i] = nolds.sampen(y[:len(y)//partitions])
+		sampen_list[i] = nolds.sampen(y[:len(y)//partitions], emb_dim)
 		sr_list[i] = sr
 	
 	return sampen_list, sr_list
