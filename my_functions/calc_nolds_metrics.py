@@ -1,5 +1,3 @@
-# TODO: Buscar solución para que emb_dim-1 y matrix_dim -1 sean divisibles dentro de calc_lyap_e
-
 import librosa
 import nolds
 import os
@@ -95,8 +93,11 @@ def calc_hurst_rs(files: np.ndarray[str], partitions: int = 1, orig: bool = Fals
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
-		hurst_rs_list[i] = nolds.hurst_rs(y[:len(y)//partitions], fit='poly')
 		sr_list[i] = sr
+		try:
+			hurst_rs_list[i] = nolds.hurst_rs(y[:len(y)//partitions], fit='poly')
+		except Exception as e:
+			hurst_rs_list[i] = repr(e)
 
 	return hurst_rs_list, sr_list
 
@@ -127,8 +128,11 @@ def calc_dfa(files: np.ndarray[str], partitions: int = 1, orig: bool = False, mi
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
-		dfa_list[i] = nolds.dfa(y[:len(y)//partitions], fit_exp='poly')
 		sr_list[i] = sr
+		try:
+			dfa_list[i] = nolds.dfa(y[:len(y)//partitions], fit_exp='poly')
+		except Exception as e:
+			dfa_list[i] = repr(e)
 
 	return dfa_list, sr_list
 
@@ -161,8 +165,11 @@ def calc_lyap_e(files: np.ndarray, partitions: int = 1, emb_dim: int = 10, orig:
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
-		lyap_e_list[i] = nolds.lyap_e(y[:len(y)//partitions], emb_dim)
 		sr_list[i] = sr
+		try:
+			lyap_e_list[i] = nolds.lyap_e(y[:len(y)//partitions], emb_dim)
+		except Exception as e:
+			lyap_e_list[i] = [repr(e)] * 4
 
 	return np.array([list(exponents) for exponents in lyap_e_list]), sr_list
 
@@ -195,8 +202,11 @@ def calc_lyap_r(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, orig:
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
-		lyap_r_list[i] = nolds.lyap_r(y[:len(y)//partitions], emb_dim, fit='poly')
 		sr_list[i] = sr
+		try:
+			lyap_r_list[i] = nolds.lyap_r(y[:len(y)//partitions], emb_dim, fit='poly')
+		except Exception as e:
+			lyap_r_list[i] = repr(e)
 
 	return lyap_r_list, sr_list
 
@@ -230,8 +240,11 @@ def calc_corr_dim(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, ori
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
-		corr_dim_list[i] = nolds.corr_dim(y[:len(y)//partitions], emb_dim=emb_dim, fit='poly')
 		sr_list[i] = sr
+		try:
+			corr_dim_list[i] = nolds.corr_dim(y[:len(y)//partitions], emb_dim=emb_dim, fit='poly')
+		except Exception as e:
+			corr_dim_list[i] = repr(e)
 
 	return corr_dim_list, sr_list
 
@@ -264,8 +277,11 @@ def calc_sampen(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, orig:
 
 	for i, file in enumerate(files):
 		y, sr = get_audio_record_ravdess(file, orig, mili_s, mode)
-		sampen_list[i] = nolds.sampen(y[:len(y)//partitions], emb_dim)
 		sr_list[i] = sr
+		try:
+			sampen_list[i] = nolds.sampen(y[:len(y)//partitions], emb_dim)
+		except Exception as e:
+			sampen_list[i] = repr(e)
 	
 	return sampen_list, sr_list
 
@@ -273,12 +289,12 @@ def calc_sampen(files: np.ndarray, partitions: int = 1, emb_dim: int = 14, orig:
 if __name__ == '__main__':
 	file = np.array([r'Ravdess\audio_speech_actors_01-24\Actor_01\03-01-01-01-01-01-01.wav', '03-01-02-01-02-02-13.wav', '03-01-07-02-01-02-19.wav'])
 
-	print(f'\n{calc_hurst_rs(file, 10) = }')
-	print(f'\n{calc_dfa(file, 10) = }')
-	print(f'\n{(temp := calc_lyap_e(file, 10)) = }')
-	print(f'\n{calc_lyap_r(file, 10) = }')
-	print(f'\n{calc_corr_dim(file, 10) = }')
-	print(f'\n{calc_sampen(file, 10) = }\n')
+	print(f'\n{calc_hurst_rs(file, 5) = }')
+	print(f'\n{calc_dfa(file, 5) = }')
+	print(f'\n{(temp := calc_lyap_e(file, 5)) = }')
+	print(f'\n{calc_lyap_r(file, 5) = }')
+	print(f'\n{calc_corr_dim(file, 5) = }')
+	print(f'\n{calc_sampen(file, 5) = }\n')
 	
 	print(f'Lyap_e[:, 0]{temp[0][:, 0]}')
 	print(f'Lyap_e[:, 0]{temp[0][:, 1]}')

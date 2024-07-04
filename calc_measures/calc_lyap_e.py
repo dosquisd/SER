@@ -20,7 +20,7 @@ records_df: pd.DataFrame = pd.read_csv(fr'{dir}\data.csv', delimiter=';', index_
 partition: int = int(os.getenv('partition'))  # La partición que se utilizará
 mili_s: float = float(os.getenv('mili_s'))  # Variable para indicar el periodo con el que se interpolará
 mode: str = os.getenv('mode')  # Modo de interpolación
-emb_dim: int = int(os.getenv('emb_dim'))  # Embedding dimension
+emb_dim: int = int(os.getenv('emb_dim')) - 1  # Embedding dimension
 orig: bool = False  # Variable para indicar que no tomaremos los datos originales, sino un resampleo
 
 # Comenzar a calcular los coeficientes de lyapunov y guardarla en un csv
